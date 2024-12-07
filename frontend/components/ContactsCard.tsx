@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import ContactPreview from './ContactPreview'
 
 interface ContactsCardProps {
-  contacts: any[]
+  contacts: { id: string; name: string; email: string; phone: string }[]
   selectedContacts: string[]
   setSelectedContacts: (contacts: string[]) => void
 }

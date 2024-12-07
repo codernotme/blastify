@@ -9,6 +9,7 @@ import ContactsCard from './ContactsCard'
 import MessageCard from './MessageCard'
 import DeliveryMethodCard from './DeliveryMethodCard'
 import ActionButtons from './ActionButtons'
+import { sendMessages } from '@/app/api/api'
 
 type FormData = {
   message: string
@@ -16,38 +17,46 @@ type FormData = {
 }
 
 const MainContent = () => {
-  const [file, setFile] = useState<File | null>(null)
-  const [contacts, setContacts] = useState<any[]>([])
+  type Contact = {
+    id: string
+    name: string
+    email: string
+    phone: string
+  }
+
+  const [contacts, setContacts] = useState<Contact[]>([])
   const [selectedContacts, setSelectedContacts] = useState<string[]>([])
+  const [statusMessage, setStatusMessage] = useState<string | null>(null)
   const { control, handleSubmit, reset } = useForm<FormData>()
+
+  const handleFileUpload = (file: File) => {
+    // Handle file upload logic here
+    console.log(file)
+  }
 
   const onSubmit = async (data: FormData) => {
     try {
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      console.log("Messages sent successfully!")
-      // Here you would typically show a success message to the user
-    } catch (error) {
+      const payload = {
+        contacts: selectedContacts
+          .map(id => contacts.find(contact => contact.id === id))
+          .filter((contact): contact is Contact => contact !== undefined)
+          .map(contact => ({ value: contact.id })),
+        message: data.message,
+        method: data.deliveryMethod,
+      }
+      await sendMessages(payload)
+      setStatusMessage("Messages sent successfully!")
+    } catch {
       console.error("Failed to send messages. Please try again.")
-      // Here you would typically show an error message to the user
+      setStatusMessage("Failed to send messages. Please try again.")
     }
   }
 
-  const handleFileUpload = async (file: File) => {
-    setFile(file)
-    // Simulating file processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    setContacts([
-      { id: '1', name: 'John Doe', email: 'john@example.com', phone: '+1234567890' },
-      { id: '2', name: 'Jane Smith', email: 'jane@example.com', phone: '+0987654321' },
-    ])
-  }
-
   const handleClearAll = () => {
-    setFile(null)
     setContacts([])
     setSelectedContacts([])
     reset()
+    setStatusMessage(null)
   }
 
   return (
@@ -57,6 +66,7 @@ const MainContent = () => {
       transition={{ duration: 0.5 }}
       className="space-y-6"
     >
+      {statusMessage && <div className="status-message">{statusMessage}</div>}
       <Tabs defaultValue="upload" className="space-y-6">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="upload">Upload</TabsTrigger>
@@ -100,4 +110,3 @@ const MainContent = () => {
 }
 
 export default MainContent
-

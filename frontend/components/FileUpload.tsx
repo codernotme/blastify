@@ -1,19 +1,28 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, File } from 'lucide-react'
+import { uploadFile } from '@/app/api/api'
 
 interface FileUploadProps {
-  onFileUpload: (file: File) => void
+  onFileUpload: (contacts: { value: string }[]) => void
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload }) => {
   const [isUploading, setIsUploading] = useState(false)
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       setIsUploading(true)
-      onFileUpload(acceptedFiles[0])
-      setIsUploading(false)
+      try {
+        const formData = new FormData()
+        formData.append('file', acceptedFiles[0])
+        const response = await uploadFile(formData, acceptedFiles[0])
+        onFileUpload(response.contacts)
+      } catch (error) {
+        console.error('File upload failed:', error)
+      } finally {
+        setIsUploading(false)
+      }
     }
   }, [onFileUpload])
 

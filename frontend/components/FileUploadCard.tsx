@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import FileUpload from './FileUpload'
 
 interface FileUploadCardProps {
-  onFileUpload: (file: File) => void
+  onFileUpload: (contacts: { value: string }[]) => void
 }
 
 const FileUploadCard: React.FC<FileUploadCardProps> = ({ onFileUpload }) => {
