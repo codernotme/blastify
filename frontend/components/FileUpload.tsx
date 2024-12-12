@@ -14,10 +14,12 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload }) => {
     if (acceptedFiles.length > 0) {
       setIsUploading(true)
       try {
-        const formData = new FormData()
-        formData.append('file', acceptedFiles[0])
-        const response = await uploadFile(formData, acceptedFiles[0])
-        onFileUpload(response.contacts)
+        const response = await uploadFile(acceptedFiles[0])
+        if (response.fileType === "pdf") {
+          onFileUpload((response.data as { contacts: { name: string, value: string }[] }).contacts)
+        } else {
+          onFileUpload(response.contacts as { name: string, value: string }[])
+        }
       } catch (error) {
         console.error('File upload failed:', error)
       } finally {
