@@ -1,0 +1,11 @@
+streamlit
+pandas
+jinja2
+resend
+httpx
+python-dotenv
+openpyxl
+fastapi
+uvicorn
+pydantic
+python-multipart

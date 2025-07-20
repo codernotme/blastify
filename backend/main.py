@@ -1,69 +1,60 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI, UploadFile, Form, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import pandas as pd
-import io
-import PyPDF2  # Add import for PyPDF2
-from typing import List  # Add import for List
+import os
+from dotenv import load_dotenv
+import parser as file_parser, email_sender, gemini_api
 
-app = FastAPI()
+load_dotenv()
 
-# Allow CORS for local development
+app = FastAPI(title="Blastify Email Sender API", version="1.0.0")
+
+# Enable CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Adjust based on frontend domain
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Ensure you have the required packages installed
-# Run the following commands in your terminal:
-# pip install fastapi
-# pip install uvicorn
+@app.get("/")
+async def root():
+    return {"message": "Blastify Email Sender API is running!"}
 
-# Mock database for demonstration purposes
-contacts_db = [
-    {"id": "1", "name": "John Doe", "email": "john@example.com", "phone": "1234567890"},
-    {"id": "2", "name": "Jane Smith", "email": "jane@example.com", "phone": "0987654321"},
-    # Add more contacts as needed
-]
+@app.post("/upload/")
+async def upload_file(file: UploadFile, generate_from_gemini: bool = Form(False)):
+    """Upload CSV/Excel file and optionally generate messages with Gemini"""
+    try:
+        df = file_parser.parse_file(file)
+        
+        if generate_from_gemini:
+            df['message'] = gemini_api.generate_messages(df)
+        
+        return JSONResponse(content={"data": df.to_dict('records'), "status": "success"})
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=400)
 
-@app.get("/contacts/", response_model=List[dict])
-async def get_contacts():
-    return contacts_db
+@app.post("/send-emails/")
+async def send_bulk_emails(data: dict):
+    """Send bulk emails using the provided data"""
+    try:
+        results = email_sender.send_bulk_emails(data)
+        return JSONResponse(content=results)
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
-@app.post("/process-file/")
-async def process_file(file: UploadFile = File(...)):
-    # Example for handling Excel files
-    if file.content_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-        contents = await file.read()
-        df = pd.read_excel(io.BytesIO(contents))
-        contacts = [{"name": row[0], "value": row[1]} for row in df.values]  # Assume names in the first column and contacts in the second column
-        return {"contacts": contacts}
-    # Add support for PDF files
-    elif file.content_type == "application/pdf":
-        contents = await file.read()
-        reader = PyPDF2.PdfFileReader(io.BytesIO(contents))
-        contacts = []
-        for page_num in range(reader.numPages):
-            page = reader.getPage(page_num)
-            text = page.extract_text()
-            # Extract contacts from text (simple example, adjust as needed)
-            for line in text.split('\n'):
-                if "@" in line:  # Simple email detection
-                    contacts.append({"name": "Unknown", "value": line.strip()})
-        return {"contacts": contacts}
-    return {"error": "Unsupported file format"}
+@app.post("/webhook/inbound-email/")
+async def inbound_email(request: Request):
+    """Handle inbound emails via Resend webhook"""
+    try:
+        payload = await request.json()
+        # Log or store the email
+        print(f"Received inbound email: {payload}")
+        return {"status": "received"}
+    except Exception as e:
+        return {"error": str(e)}
 
-@app.post("/send-messages/")
-async def send_messages(
-    contacts: list = Form(...), message: str = Form(...), method: str = Form(...)
-):
-    # Example logic for sending messages (you'll need real integration)
-    if method == "email":
-        status = f"Sent {len(contacts)} emails successfully."
-    elif method == "whatsapp":
-        status = f"Sent {len(contacts)} WhatsApp messages successfully."
-    else:
-        status = "Invalid method."
-    return {"status": status}
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Template</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 300;
+        }
+        .content {
+            padding: 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .message {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: #555;
+        }
+        .cta {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: transform 0.2s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+        .social-links {
+            margin: 15px 0;
+        }
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #667eea;
+            text-decoration: none;
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e9ecef, transparent);
+            margin: 20px 0;
+        }
+        
+        /* Responsive design */
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+                border-radius: 0;
+            }
+            .content {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .greeting {
+                font-size: 16px;
+            }
+            .message {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Blastify</h1>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="content">
+            <div class="greeting">
+                Hello {{ name }},
+            </div>
+            
+            <div class="message">
+                {{ message | safe }}
+            </div>
+            
+            <div class="divider"></div>
+            
+            <!-- Call to Action -->
+            <div class="cta">
+                <a href="#" class="cta-button">Take Action Now</a>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <div class="social-links">
+                <a href="#">Website</a> |
+                <a href="#">LinkedIn</a> |
+                <a href="#">Twitter</a>
+            </div>
+            <p>
+                <strong>Best regards,</strong><br>
+                The Blastify Team
+            </p>
+            <p style="font-size: 12px; margin-top: 15px;">
+                This email was sent to {{ name }}. If you no longer wish to receive these emails, 
+                <a href="#" style="color: #667eea;">unsubscribe here</a>.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
